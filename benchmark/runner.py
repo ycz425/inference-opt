@@ -1,6 +1,7 @@
-from inference import Backend
-from benchmark import BatchResult
+from backends import Backend
+from .result import BatchResult
 from workloads import Workload
+from config import Config
 import time
 
 
@@ -8,8 +9,9 @@ class BenchmarkRunner:
     def __init__(self, backend: Backend):
         self.backend = backend
 
-    def run(self, workload: Workload, batch_size=1) -> list[BatchResult]:
+    def run(self, workload: Workload, config: Config) -> list[BatchResult]:
         results = []
+        batch_size = config.batch_size
         for i in range(0, len(workload.conversations), batch_size):
             batch = Workload(conversations=workload.conversations[i:i + batch_size])
             

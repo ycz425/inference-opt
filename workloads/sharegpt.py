@@ -1,4 +1,4 @@
-from workloads import WorkloadLoader, Workload, Conversation, Turn
+from .base import WorkloadLoader, Workload, Conversation, Turn
 from datasets import load_dataset
 
 
