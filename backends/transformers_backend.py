@@ -1,6 +1,6 @@
 from transformers import BatchEncoding, AutoModelForCausalLM, AutoTokenizer
 import torch
-from workloads import Workload, SyntheticPrompt, Conversation
+from workload import Workload, SyntheticPrompt, Conversation
 from config import Precision, Device
 
 

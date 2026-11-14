@@ -1,5 +1,5 @@
 from typing import Protocol, Any
-from workloads import Workload
+from workload import Workload
 from config import Precision, Device
 
 class Backend(Protocol):

@@ -1,6 +1,6 @@
 from backends import Backend
 from .result import BatchResult
-from workloads import Workload
+from workload import Workload
 from config import Config
 from memory import MemoryMonitor
 import torch
