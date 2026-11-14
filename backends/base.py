@@ -3,7 +3,7 @@ from workloads import Workload
 from config import Precision, Device
 
 class Backend(Protocol):
-    def __init__(self, model_name: str, preicion: Precision, max_new_tokens: int, device: Device):
+    def __init__(self, model_name: str, precision: Precision, output_tokens: int, device: Device, seed: int):
         ...
 
     def preprocess(self, workload: Workload) -> Any:
@@ -19,5 +19,8 @@ class Backend(Protocol):
         ...
 
     def count_output_tokens(self, outputs: Any) -> int:
+        ...
+
+    def synchronize(self) -> None:
         ...
 

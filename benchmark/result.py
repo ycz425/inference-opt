@@ -21,10 +21,12 @@ class BenchmarkResult(BaseModel):
 
     average_batch_latency: float
 
+    peak_memory: int
+
     batch_results: list[BatchResult]
 
 
-def benchmark_result(batch_results: list[BatchResult]) -> BenchmarkResult:
+def benchmark_result(batch_results: list[BatchResult], peak_memory: int) -> BenchmarkResult:
     num_requests = 0
     total_input_tokens = 0
     total_output_tokens = 0
@@ -51,5 +53,6 @@ def benchmark_result(batch_results: list[BatchResult]) -> BenchmarkResult:
         total_tokens_per_sec=total_tokens_per_sec,
         requests_per_sec=requests_per_sec,
         average_batch_latency=average_batch_latency,
+        peak_memory=peak_memory,
         batch_results=batch_results
     )

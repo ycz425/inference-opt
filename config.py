@@ -6,19 +6,20 @@ import yaml
 
 type BackendType = Literal['transformers']
 type Precision = Literal['fp32', 'fp16', 'bf16']
-type Device = Literal['cpu', 'cuda', 'mps']
-type Dataset = Literal['sharegpt']
+type Device = Literal['cuda', 'mps']
+type Dataset = Literal['synthetic', 'sharegpt']
 
 class Config(BaseModel):
     model_name: str
     backend: BackendType
     precision: Precision
-    max_new_tokens: int = 1024
+    input_tokens: int | None = None  # if dataset = 'synthetic', must be set to an int value
+    output_tokens: int = 256
     device: Device
-
     dataset: Dataset
     workload_size: int
     batch_size: int
+    warmup_batches: int = 3
     seed: int = 42
 
 
