@@ -1,6 +1,6 @@
-from transformers import BatchEncoding, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from workload import Workload, SyntheticPrompt, Conversation
+from preprocessing import Inputs
 from config import Precision, Device
 from transformers import BitsAndBytesConfig
 
@@ -13,7 +13,7 @@ DTYPE_MAP: dict[Precision, torch.dtype] = {
 
 
 class TransformersBackend:
-    def __init__(self, model_name: str, precision: Precision = 'fp32', output_tokens=256, device: Device ='cuda', seed=42):
+    def __init__(self, model_name: str, precision: Precision = 'fp32', output_tokens=256, device: Device ='cuda'):
         if precision in {'int4', 'int8'}:
             quantization_config = BitsAndBytesConfig(load_in_4bit=(precision == 'int4'), load_in_8bit=(precision == 'int8'))
             self.model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_config)
@@ -22,34 +22,13 @@ class TransformersBackend:
         self.model = self.model.to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
         self.output_tokens = output_tokens
-        self.generator = torch.Generator().manual_seed(seed) 
 
-    def preprocess(self, workload: Workload) -> BatchEncoding:
-        if all(isinstance(r, SyntheticPrompt) for r in workload.requests):
-            n = workload.requests[0].num_tokens
-            ids = torch.randint(0, self.tokenizer.vocab_size, (len(workload.requests), n), generator=self.generator)
-            return BatchEncoding({'input_ids': ids, 'attention_mask': torch.ones_like(ids)})
-        
-        conversations = []
-        for conversation in workload.requests:
-            turns = []
-            for turn in conversation.turns:
-                turns.append({'role': turn.role, 'content': turn.content})
-            conversations.append(turns)
-        return self.tokenizer.apply_chat_template(
-            conversations,
-            add_generation_prompt=True,
-            tokenize=True,
-            padding=True,
-            return_tensors='pt'
-        )
-        
-
-    def generate(self, inputs: BatchEncoding) -> torch.LongTensor:
-        inputs = inputs.to(self.model.device)
+    def generate(self, inputs: Inputs) -> torch.LongTensor:
+        input_ids = torch.tensor(inputs.input_ids, dtype=torch.int64, device=self.model.device)
+        attention_mask = torch.tensor(inputs.attention_mask, dtype=torch.int64, device=self.model.device)
         outputs = self.model.generate(
-            inputs=inputs['input_ids'],
-            attention_mask=inputs['attention_mask'],
+            inputs=input_ids,
+            attention_mask=attention_mask,
             do_sample=False,
             min_new_tokens=self.output_tokens,
             max_new_tokens=self.output_tokens
@@ -59,14 +38,12 @@ class TransformersBackend:
     def detokenize(self, outputs: torch.LongTensor) -> list[str]:
         return self.tokenizer.batch_decode(outputs.cpu(), skip_special_tokens=True)
 
-    def count_input_tokens(self, inputs: BatchEncoding) -> int:
-        return inputs['attention_mask'].sum(dtype=torch.int64).item()
-
-    def count_output_tokens(self, outputs: torch.LongTensor) -> int:
-        return (outputs != self.tokenizer.pad_token_id).sum(dtype=torch.int64).item()
-
     def synchronize(self) -> None:
         if self.model.device.type == 'cuda':
             torch.cuda.synchronize()
         elif self.model.device.type == 'mps':
             torch.mps.synchronize()
+
+    def compute_token_losses(self, inputs: Inputs) -> torch.Tensor:
+        outputs = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask'])
+        return outputs.logits

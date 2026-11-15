@@ -3,6 +3,8 @@ from .result import BatchResult
 from workload import Workload
 from config import Config
 from memory import MemoryMonitor
+from preprocessing import preprocess
+from transformers import AutoTokenizer
 import torch
 import time
 
@@ -25,10 +27,11 @@ class BenchmarkRunner:
                 self.memory_monitor.reset()
 
             batch = Workload(requests=workload.requests[i:i + batch_size])
-            
-            inputs = self.backend.preprocess(batch)
 
-            input_tokens = self.backend.count_input_tokens(inputs)
+            tokenizer = AutoTokenizer.from_pretrained(config.model_name, padding_size='left')
+            inputs = preprocess(tokenizer=tokenizer, workload=batch, seed=config.seed)
+
+            input_tokens = torch.tensor(inputs.attention_mask).sum(dtype=torch.int64).item()
 
             self.backend.synchronize()
             generation_start = time.perf_counter()
@@ -38,7 +41,7 @@ class BenchmarkRunner:
 
             output_texts = self.backend.detokenize(outputs)
 
-            output_tokens = self.backend.count_output_tokens(outputs)
+            output_tokens = (outputs != tokenizer.pad_token_id).sum(dtype=torch.int64).item()
             generation_time = generation_end - generation_start
 
             warmup -= 1
