@@ -29,8 +29,8 @@ class QualityEvaluator:
         num_tokens = np.array(num_tokens)
         total_tokens = num_tokens.sum()
 
-        candidate_loss = (candidate_losses * num_tokens) / total_tokens
-        reference_loss = (reference_losses * num_tokens) / total_tokens
+        candidate_loss = (candidate_losses * num_tokens).sum() / total_tokens
+        reference_loss = (reference_losses * num_tokens).sum() / total_tokens
 
         return (candidate_loss - reference_loss) / reference_loss * 100
 

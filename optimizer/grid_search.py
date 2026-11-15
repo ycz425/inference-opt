@@ -43,7 +43,7 @@ class GridSearch(Optimizer):
 
 grid = Grid(
     precision=['fp16', 'fp32', 'int4', 'int8'],
-    batch_size=[1, 2, 4, 8]
+    batch_size=[2, 4, 8]
 )
 
 constraint = Constraint(
