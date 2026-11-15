@@ -2,18 +2,24 @@ from transformers import BatchEncoding, AutoModelForCausalLM, AutoTokenizer
 import torch
 from workload import Workload, SyntheticPrompt, Conversation
 from config import Precision, Device
+from transformers import BitsAndBytesConfig
 
 
 DTYPE_MAP: dict[Precision, torch.dtype] = {
     "fp32": torch.float32,
     "fp16": torch.float16,
-    "bf16": torch.bfloat16,
+    "bf16": torch.bfloat16
 }
 
 
 class TransformersBackend:
     def __init__(self, model_name: str, precision: Precision = 'fp32', output_tokens=256, device: Device ='cuda', seed=42):
-        self.model = AutoModelForCausalLM.from_pretrained(model_name,dtype=DTYPE_MAP[precision]).to(device)
+        if precision in {'int4', 'int8'}:
+            quantization_config = BitsAndBytesConfig(load_in_4bit=(precision == 'int4'), load_in_8bit=(precision == 'int8'))
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_config)
+        else :  
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, dtype=DTYPE_MAP[precision])
+        self.model = self.model.to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
         self.output_tokens = output_tokens
         self.generator = torch.Generator().manual_seed(seed) 
