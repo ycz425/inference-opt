@@ -1,11 +1,11 @@
-from .base import WorkloadLoader, Workload, Conversation, Turn
+from .base import WorkloadLoader, Workload, Turn, Request
 from datasets import load_dataset
 
 
 class ShareGPTLoader(WorkloadLoader):
-    def load_workload(self, size, input_tokens=None, seed=42) -> Workload:
+    def load_workload(self, num_requests, seed=42) -> Workload:
         dataset = load_dataset('RyokoAI/ShareGPT52K', split='train')
-        dataset = dataset.shuffle(seed=seed).select(range(size))
+        dataset = dataset.shuffle(seed=seed).select(range(num_requests))
 
         conversations = []
         for row in dataset:
@@ -21,7 +21,7 @@ class ShareGPTLoader(WorkloadLoader):
                     break
                 else:
                     raise ValueError
-            conversations.append(Conversation(id=row_id, turns=turns))
+            conversations.append(Request(id=row_id, turns=turns))
         return Workload(requests=conversations)
 
         

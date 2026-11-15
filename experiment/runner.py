@@ -3,7 +3,8 @@ from workload import workload_from_config
 from backends import backend_from_config
 from memory import memory_monitor_from_config
 from benchmark import BenchmarkRunner, benchmark_result, BenchmarkResult
-from config import load_config, save_config, Config
+from transformers import AutoTokenizer
+from config import save_config, Config
 from pathlib import Path
 from datetime import datetime
 
@@ -18,15 +19,16 @@ class ExperimentRunner:
     
         save_config(config, output_dir / 'config.yaml')
     
-        workload = workload_from_config(config)
-        backend = backend_from_config(config)
+        workload = workload_from_config(config.workload_config)
+        candidate = backend_from_config(config.inference_config)
         memory_monitor = memory_monitor_from_config(config)
     
-        runner = BenchmarkRunner(backend, memory_monitor)
+        runner = BenchmarkRunner(backend=candidate, memory_monitor=memory_monitor)
     
-        batch_results, peak_memory = runner.run(workload, config=config)
-    
-        result = benchmark_result(batch_results, peak_memory)
+        batch_results, peak_memory, ce_degradation = runner.run(workload, config=config)
+
+        result = benchmark_result(batch_results, peak_memory, ce_degradation)
+            
     
         output_path = output_dir / 'result.json'
         with output_path.open('w') as f:

@@ -4,11 +4,12 @@ from itertools import product
 from config import Config, load_config
 from experiment import ExperimentRunner
 from pathlib import Path
+from datetime import datetime
 
 
 class GridSearch(Optimizer):
-    def __init__(self, config: Config, output_dir: str | Path):
-        super().__init__(config, output_dir)
+    def __init__(self, config: Config, output_dir: str | Path, verbose: bool = False):
+        super().__init__(config, output_dir, verbose)
 
     def search(self, grid: Grid, metric: str, constraint:  Constraint | None = None):
         grid = grid.model_dump()
@@ -16,13 +17,18 @@ class GridSearch(Optimizer):
         best_metric = 0
         best_config = None
         for combination in product(*grid.values()):
+            if self.verbose:
+                print(f'[{datetime.now()}] Starting {combination}')
+            
             config = self.config.model_copy()
-            config.update(**dict(zip(grid.keys(), combination)))
+            config.update_inference(**dict(zip(grid.keys(), combination)))
 
-            try:
-                result = runner.run(config)
-            except:
-                continue
+            result = runner.run(config)
+
+            # try:
+                
+            # except:
+            #     continue
 
             if not constraint_satisfied(result, constraint):
                 continue
@@ -36,10 +42,16 @@ class GridSearch(Optimizer):
             
 
 grid = Grid(
-    precision=['fp16', 'fp32', 'bf16', 'int4', 'int8'],
-    batch_size=[1, 2, 4, 8, 16]
+    precision=['fp16', 'fp32', 'int4', 'int8'],
+    batch_size=[1, 2, 4, 8]
+)
+
+constraint = Constraint(
+    max_memory=6 * 1024**3,                # 6 GiB
+    max_average_batch_latency=10.0,         # 10 seconds
+    max_ce_degradation=1.0,                 # 1%
 )
 
 config = load_config('/Users/ycz425/Desktop/projects/inference-opt/config.yaml')
-opt = GridSearch(config, 'test_optimization')
-print(opt.search(grid))
+opt = GridSearch(config, 'test_optimization', verbose=True)
+print(opt.search(grid, metric='output_tokens_per_sec', constraint=constraint))

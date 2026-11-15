@@ -9,22 +9,40 @@ type Precision = Literal['fp32', 'fp16', 'bf16', 'int8', 'int4']
 type Device = Literal['cuda', 'mps']
 type Dataset = Literal['synthetic', 'sharegpt']
 
-class Config(BaseModel):
+class InferenceConfig(BaseModel):
     model_name: str
     backend: BackendType
-    precision: Precision = 'fp32'
-    input_tokens: int | None = None  # if dataset = 'synthetic', must be set to an int value
-    output_tokens: int = 256
+    precision: Precision
+    batch_size: int
     device: Device
+
+
+class WorkloadConfig(BaseModel):
     dataset: Dataset
-    workload_size: int
-    batch_size: int = 1
+    num_requests: int
+    seed: int = 42
+
+
+class QualityConfig(BaseModel):
+    reference: InferenceConfig | None
+    workload: WorkloadConfig
+    num_tokens_per_request: int = 500
+
+
+class Config(BaseModel):
+    inference_config: InferenceConfig
+    output_tokens: int
+    input_tokens: int | None = None
+    workload_config: WorkloadConfig
     warmup_batches: int = 3
     seed: int = 42
 
-    def update(self, **kwargs):
+    quality_config: QualityConfig | None
+
+
+    def update_inference(self, **kwargs):
         for key in kwargs:
-            setattr(self, key, kwargs[key])
+            setattr(self.inference_config, key, kwargs[key])
 
 
 def load_config(path: str | Path) -> Config:

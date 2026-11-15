@@ -4,7 +4,7 @@ from config import Precision, Device
 import torch
 
 class Backend(Protocol):
-    def __init__(self, model_name: str, precision: Precision, output_tokens: int, device: Device):
+    def __init__(self, model_name: str, precision: Precision, device: Device):
         ...
 
     def generate(self, inputs: Inputs) -> torch.LongTensor:
@@ -16,6 +16,6 @@ class Backend(Protocol):
     def synchronize(self) -> None:
         ...
 
-    def compute_token_losses(self, inputs: Inputs) -> int:
+    def compute_token_loss(self, inputs: Inputs) -> float:
         ...
 

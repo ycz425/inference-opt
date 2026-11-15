@@ -1,11 +1,12 @@
-from backends import Backend
+from backends import Backend, backend_from_config
 from .result import BatchResult
-from workload import Workload
+from workload import Workload, workload_from_config
 from config import Config
 from memory import MemoryMonitor
 from preprocessing import preprocess
 from transformers import AutoTokenizer
-import torch
+from .quality_eval import QualityEvaluator
+from utils import count_input_tokens, count_output_tokens
 import time
 
 
@@ -14,9 +15,11 @@ class BenchmarkRunner:
         self.backend = backend
         self.memory_monitor = memory_monitor
 
-    def run(self, workload: Workload, config: Config) -> tuple[list[BatchResult], int]:
+    def run(self, workload: Workload, config: Config) -> tuple[list[BatchResult], int, float]:
         results = []
-        batch_size = config.batch_size
+        batch_size = config.inference_config.batch_size
+
+        tokenizer = AutoTokenizer.from_pretrained(config.inference_config.model_name, padding_side='left')
 
         if config.warmup_batches >= len(workload.requests) // batch_size:
             raise ValueError
@@ -28,20 +31,19 @@ class BenchmarkRunner:
 
             batch = Workload(requests=workload.requests[i:i + batch_size])
 
-            tokenizer = AutoTokenizer.from_pretrained(config.model_name, padding_size='left')
-            inputs = preprocess(tokenizer=tokenizer, workload=batch, seed=config.seed)
+            inputs = preprocess(tokenizer=tokenizer, workload=batch, num_tokens=config.input_tokens)
 
-            input_tokens = torch.tensor(inputs.attention_mask).sum(dtype=torch.int64).item()
+            input_tokens = count_input_tokens(inputs)
 
             self.backend.synchronize()
             generation_start = time.perf_counter()
-            outputs = self.backend.generate(inputs)
+            outputs = self.backend.generate(inputs, config.output_tokens)
             self.backend.synchronize()
             generation_end = time.perf_counter()
 
             output_texts = self.backend.detokenize(outputs)
 
-            output_tokens = (outputs != tokenizer.pad_token_id).sum(dtype=torch.int64).item()
+            output_tokens = count_output_tokens(outputs, tokenizer.pad_token_id)
             generation_time = generation_end - generation_start
 
             warmup -= 1
@@ -59,4 +61,12 @@ class BenchmarkRunner:
 
         peak_memory = self.memory_monitor.get_peak_memory()
 
-        return results, peak_memory
+        if config.quality_config is not None:
+            workload = workload_from_config(config.quality_config.workload)
+            reference = backend_from_config(config.quality_config.reference)
+            evaluator = QualityEvaluator(candidate=self.backend, reference=reference, tokenizer=tokenizer)
+            ce_degradation = evaluator.run(workload, config.quality_config.num_tokens_per_request, config.quality_config.reference.batch_size)
+        else:
+            ce_degradation = None
+
+        return results, peak_memory, ce_degradation

@@ -1,27 +1,41 @@
-import torch
-from workload import Workload, SyntheticPrompt
+from workload import Workload
 from transformers import PreTrainedTokenizerBase
 from .inputs import Inputs
 
-def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, seed: int = 42) -> Inputs:
-    if all(isinstance(r, SyntheticPrompt) for r in workload.requests):
-        n = workload.requests[0].num_tokens
-        g = torch.Generator().manual_seed(seed)
-        ids = torch.randint(0, tokenizer.vocab_size, (len(workload.requests), n), generator=g)
-        return Inputs(input_ids=ids, attention_mask=torch.ones_like(ids))
-    
+def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, num_tokens: int | None = None) -> Inputs:
     conversations = []
     for conversation in workload.requests:
         turns = []
         for turn in conversation.turns:
             turns.append({'role': turn.role, 'content': turn.content})
         conversations.append(turns)
-    batch_encoding = tokenizer.apply_chat_template(
-        conversations,
-        add_generation_prompt=True,
-        tokenize=True,
-        padding=True,
-        return_dict=True
-    )
 
-    return Inputs(input_ids=batch_encoding['input_ids'], attention_mask=batch_encoding['attention_mask'])
+    if num_tokens is None:
+        batch_encoding = tokenizer.apply_chat_template(
+            conversations,
+            add_generation_prompt=True,
+            tokenize=True,
+            padding=True,
+            return_dict=True
+        )
+        input_ids = batch_encoding['input_ids']
+        attention_mask = batch_encoding['attention_mask']
+    else:
+        batch_encoding = tokenizer.apply_chat_template(
+            conversations,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True
+        )
+        input_ids = []
+        attention_mask = []
+        for i in range(len(batch_encoding['input_ids'])):
+            if len(batch_encoding['input_ids'][i]) >= num_tokens:
+                input_ids.append(batch_encoding['input_ids'][i][:num_tokens])
+                attention_mask.append([1] * num_tokens)
+            else:
+                length = len(batch_encoding['input_ids'][i])
+                input_ids.append([tokenizer.pad_token_id] * (num_tokens - length) + batch_encoding['input_ids'][i])
+                attention_mask.append([0] * (num_tokens - length) + [1] * length)
+
+    return Inputs(input_ids=input_ids, attention_mask=attention_mask)

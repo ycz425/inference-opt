@@ -1,13 +1,11 @@
 from .sharegpt import ShareGPTLoader
-from .synthetic import SyntheticLoader
-from config import Dataset, Config
+from config import Dataset, WorkloadConfig
 from .base import WorkloadLoader
 
 WORKLOAD_LOADERS: dict[Dataset, WorkloadLoader] = {
-    'sharegpt': ShareGPTLoader(),
-    'synthetic': SyntheticLoader()
+    'sharegpt': ShareGPTLoader()
 }
 
-def workload_from_config(config: Config):
+def workload_from_config(config: WorkloadConfig):
     workload_loader = WORKLOAD_LOADERS[config.dataset]
-    return workload_loader.load_workload(size=config.workload_size, input_tokens=config.input_tokens, seed=config.seed)
+    return workload_loader.load_workload(num_requests=config.num_requests, seed=config.seed)

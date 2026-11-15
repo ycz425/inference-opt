@@ -9,4 +9,4 @@ MEMORY_MONITORS: dict[tuple[BackendType, Device], MemoryMonitor] = {
 }
 
 def memory_monitor_from_config(config: Config):
-    return MEMORY_MONITORS[(config.backend, config.device)]
+    return MEMORY_MONITORS[(config.inference_config.backend, config.inference_config.device)]
