@@ -49,5 +49,5 @@ class TransformersBackend:
     def compute_token_loss(self, inputs: Inputs) -> float:
         input_ids = torch.tensor(inputs.input_ids, dtype=torch.int64, device=self.model.device)
         attention_mask = torch.tensor(inputs.attention_mask, dtype=torch.int64, device=self.model.device)
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, labels=input_ids)
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, labels=torch.where(attention_mask == 0, -100, input_ids))
         return outputs.loss.item()

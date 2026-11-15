@@ -19,7 +19,7 @@ class BenchmarkRunner:
         results = []
         batch_size = config.inference_config.batch_size
 
-        tokenizer = AutoTokenizer.from_pretrained(config.inference_config.model_name, padding_side='left')
+        tokenizer = AutoTokenizer.from_pretrained(config.inference_config.model_name)
 
         if config.warmup_batches >= len(workload.requests) // batch_size:
             raise ValueError
@@ -31,7 +31,7 @@ class BenchmarkRunner:
 
             batch = Workload(requests=workload.requests[i:i + batch_size])
 
-            inputs = preprocess(tokenizer=tokenizer, workload=batch, num_tokens=config.input_tokens)
+            inputs = preprocess(tokenizer=tokenizer, workload=batch, num_tokens=config.input_tokens, padding_side='left')
 
             input_tokens = count_input_tokens(inputs)
 

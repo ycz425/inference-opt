@@ -18,9 +18,9 @@ class QualityEvaluator:
 
         for i in range(0, len(workload.requests), batch_size):
             batch = Workload(requests=workload.requests[i:i + batch_size])
-            inputs = preprocess(tokenizer=self.tokenizer, workload=batch, num_tokens=num_tokens_per_request)
+            inputs = preprocess(tokenizer=self.tokenizer, workload=batch, num_tokens=num_tokens_per_request, padding_side='right')
 
-            num_tokens.append(count_input_tokens(inputs))
+            num_tokens.append(count_input_tokens(inputs) - len(batch.requests))  # ignoring first token of each request
             candidate_losses.append(self.candidate.compute_token_loss(inputs))
             reference_losses.append(self.reference.compute_token_loss(inputs))
 

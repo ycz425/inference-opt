@@ -1,8 +1,10 @@
 from workload import Workload
 from transformers import PreTrainedTokenizerBase
 from .inputs import Inputs
+from typing import Literal
 
-def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, num_tokens: int | None = None) -> Inputs:
+def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, num_tokens: int | None = None, padding_side: Literal['left', 'right'] = 'left') -> Inputs:
+    tokenizer.padding_side = padding_side
     conversations = []
     for conversation in workload.requests:
         turns = []
@@ -35,7 +37,11 @@ def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, num_token
                 attention_mask.append([1] * num_tokens)
             else:
                 length = len(batch_encoding['input_ids'][i])
-                input_ids.append([tokenizer.pad_token_id] * (num_tokens - length) + batch_encoding['input_ids'][i])
-                attention_mask.append([0] * (num_tokens - length) + [1] * length)
+                if padding_side == 'left':
+                    input_ids.append([tokenizer.pad_token_id] * (num_tokens - length) + batch_encoding['input_ids'][i])
+                    attention_mask.append([0] * (num_tokens - length) + [1] * length)
+                else:
+                    input_ids.append(batch_encoding['input_ids'][i] + [tokenizer.pad_token_id] * (num_tokens - length))
+                    attention_mask.append([1] * length + [0] * (num_tokens - length))
 
     return Inputs(input_ids=input_ids, attention_mask=attention_mask)
