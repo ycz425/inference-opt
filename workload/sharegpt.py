@@ -1,11 +1,15 @@
 from .base import WorkloadLoader, Workload, Turn, Request
 from datasets import load_dataset
+from preprocessing import to_conversation
 
 
 class ShareGPTLoader(WorkloadLoader):
-    def load_workload(self, num_requests, seed=42) -> Workload:
+    def load_workload(self, num_requests: int, min_tokens: int | None = None, tokenizer=None, seed=42) -> Workload:
+        if min_tokens is not None and tokenizer is None:
+            raise ValueError
+
         dataset = load_dataset('RyokoAI/ShareGPT52K', split='train')
-        dataset = dataset.shuffle(seed=seed).select(range(num_requests))
+        dataset = dataset.shuffle(seed=seed)
 
         conversations = []
         for row in dataset:
@@ -21,7 +25,26 @@ class ShareGPTLoader(WorkloadLoader):
                     break
                 else:
                     raise ValueError
+
+            request = Request(id=row_id, turns=turns)
+            
+            if min_tokens is not None:
+                conversation = to_conversation(request)
+                tokens = tokenizer.apply_chat_template(
+                    conversation,
+                    add_generation_prompt=True,
+                    tokenize=True,
+                    padding=False,
+                    return_dict=False
+                )
+                if len(tokens) < min_tokens:
+                    continue
+            
             conversations.append(Request(id=row_id, turns=turns))
+
+            if len(conversations) == num_requests:
+                break
+
         return Workload(requests=conversations)
 
         

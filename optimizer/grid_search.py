@@ -20,7 +20,7 @@ class GridSearch(Optimizer):
             if self.verbose:
                 print(f'[{datetime.now()}] Starting {combination}')
             
-            config = self.config.model_copy()
+            config = self.config.model_copy(deep=True)
             config.update_inference(**dict(zip(grid.keys(), combination)))
 
             result = runner.run(config)

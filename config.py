@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Literal
 from pathlib import Path
 import yaml
@@ -14,30 +14,35 @@ class InferenceConfig(BaseModel):
     backend: BackendType
     precision: Precision
     batch_size: int
+    output_tokens: int
+    warmup_batches: int = 3
     device: Device
+
+    model_config = ConfigDict(extra='forbid')
 
 
 class WorkloadConfig(BaseModel):
     dataset: Dataset
     num_requests: int
+    num_tokens: int | None = None
     seed: int = 42
+
+    model_config = ConfigDict(extra='forbid')
 
 
 class QualityConfig(BaseModel):
     reference: InferenceConfig | None
     workload: WorkloadConfig
-    num_tokens_per_request: int = 500
+
+    model_config = ConfigDict(extra='forbid')
 
 
 class Config(BaseModel):
     inference_config: InferenceConfig
-    output_tokens: int
-    input_tokens: int | None = None
     workload_config: WorkloadConfig
-    warmup_batches: int = 3
-    seed: int = 42
-
     quality_config: QualityConfig | None
+
+    model_config = ConfigDict(extra='forbid')
 
 
     def update_inference(self, **kwargs):

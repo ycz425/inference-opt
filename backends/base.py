@@ -7,7 +7,7 @@ class Backend(Protocol):
     def __init__(self, model_name: str, precision: Precision, device: Device):
         ...
 
-    def generate(self, inputs: Inputs) -> torch.LongTensor:
+    def generate(self, inputs: Inputs, output_tokens: int) -> torch.LongTensor:
         ...
 
     def detokenize(self, outputs: torch.LongTensor) -> list[str]:

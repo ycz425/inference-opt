@@ -18,14 +18,16 @@ class ExperimentRunner:
         output_dir.mkdir(parents=True, exist_ok=True)
     
         save_config(config, output_dir / 'config.yaml')
+
+        tokenizer = AutoTokenizer.from_pretrained(config.inference_config.model_name)
     
-        workload = workload_from_config(config.workload_config)
+        workload = workload_from_config(config.workload_config, tokenizer)
         candidate = backend_from_config(config.inference_config)
         memory_monitor = memory_monitor_from_config(config)
     
         runner = BenchmarkRunner(backend=candidate, memory_monitor=memory_monitor)
     
-        batch_results, peak_memory, ce_degradation = runner.run(workload, config=config)
+        batch_results, peak_memory, ce_degradation = runner.run(workload, config=config, tokenizer=tokenizer)
 
         result = benchmark_result(batch_results, peak_memory, ce_degradation)
             

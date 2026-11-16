@@ -1,2 +1,2 @@
-from .preprocess import preprocess
+from .preprocess import preprocess, to_conversation
 from .inputs import Inputs

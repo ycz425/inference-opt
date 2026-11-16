@@ -17,5 +17,5 @@ class Workload(BaseModel):
 
 class WorkloadLoader(ABC):
     @abstractmethod 
-    def load_workload(self, num_requests, seed=42) -> Workload:
+    def load_workload(self, num_requests: int, min_tokens: int | None = None, tokenizer=None, seed=42) -> Workload:
         ...
