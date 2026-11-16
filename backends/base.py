@@ -19,3 +19,6 @@ class Backend(Protocol):
     def compute_token_loss(self, inputs: Inputs) -> float:
         ...
 
+    def free_device_memory(self) -> None:
+        ...
+

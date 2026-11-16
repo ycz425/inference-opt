@@ -6,3 +6,6 @@ class TorchCUDAMemoryMonitor:
 
     def get_peak_memory(self) -> int:
         return torch.cuda.max_memory_allocated()
+
+    def get_current_memory(self) -> int:
+        return torch.cuda.memory_allocated()

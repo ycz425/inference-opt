@@ -31,3 +31,6 @@ class TorchMPSMemoryMonitor:
         self.thread.join()
 
         return self.peak_memory
+
+    def get_current_memory(self) -> int:
+        return torch.mps.current_allocated_memory()

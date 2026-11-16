@@ -12,10 +12,10 @@ type Dataset = Literal['synthetic', 'sharegpt']
 class InferenceConfig(BaseModel):
     model_name: str
     backend: BackendType
-    precision: Precision
-    batch_size: int
-    output_tokens: int
-    warmup_batches: int = 3
+    precision: Precision = 'fp32'
+    batch_size: int = 1
+    output_tokens: int = 1024
+    warmup_batches: int = 0
     device: Device
 
     model_config = ConfigDict(extra='forbid')
