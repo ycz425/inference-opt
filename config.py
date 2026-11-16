@@ -14,6 +14,7 @@ class InferenceConfig(BaseModel):
     backend: BackendType
     precision: Precision = 'fp32'
     device: Device
+    compile: bool = False
     batch_size: int = 1
 
     model_config = ConfigDict(extra='forbid')

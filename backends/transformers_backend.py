@@ -17,7 +17,7 @@ DTYPE_MAP: dict[Precision, torch.dtype] = {
 
 
 class TransformersBackend:
-    def __init__(self, model_name: str, precision: Precision = 'fp32', device: Device ='cuda'):
+    def __init__(self, model_name: str, precision: Precision = 'fp32', device: Device ='cuda', compile: bool = False):
         if precision in {'int4', 'int8'}:
             if device != 'cuda':
                 raise ValueError
@@ -25,6 +25,12 @@ class TransformersBackend:
             self.model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_config)
         else :  
             self.model = AutoModelForCausalLM.from_pretrained(model_name, dtype=DTYPE_MAP[precision]).to(device)
+
+        if compile:
+            torch._dynamo.reset()
+            self.model.generation_config.cache_implementation = 'static'
+            self.model.forward = torch.compile(self.model.forward, mode='reduce-overhead', fullgraph=True)
+        
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
         self.device = device
 

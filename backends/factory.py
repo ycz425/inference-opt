@@ -10,4 +10,4 @@ BACKENDS: dict[BackendType, type[Backend]] = {
 
 def backend_from_config(config: InferenceConfig):
     backend = BACKENDS[config.backend]
-    return backend(config.model_name, config.precision, config.device)
+    return backend(config.model_name, config.precision, config.device, config.compile)

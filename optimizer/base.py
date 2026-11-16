@@ -8,6 +8,7 @@ from .constraint import Constraint
 class Grid(BaseModel):
     precision: list[Precision]
     batch_size: list[int]
+    compile: list[bool]
 
 
 class Optimizer(ABC):
