@@ -15,6 +15,7 @@ class ShareGPTLoader(WorkloadLoader):
             row_id = row['id']
             conversation = row['conversations']
             turns = []
+            valid = True
             for i, turn in enumerate(conversation):
                 if turn['from'] == 'human':
                     turns.append(Turn(role='user', content=turn['value']))
@@ -23,7 +24,10 @@ class ShareGPTLoader(WorkloadLoader):
                 elif turn['from'] == 'gpt':
                     break
                 else:
-                    raise ValueError
+                    valid = False
+                    break
+            if not valid:
+                continue
 
             request = Request(id=row_id, turns=turns)
             

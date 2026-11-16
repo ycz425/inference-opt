@@ -4,3 +4,4 @@ datasets
 pydantic
 accelerate
 bitsandbytes
+triton

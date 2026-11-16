@@ -2,7 +2,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from preprocessing import Inputs
 from config import Precision, Device
-from transformers import BitsAndBytesConfig
+from transformers import BitsAndBytesConfig, CompileConfig
 import gc
 
 from transformers import logging
@@ -29,7 +29,7 @@ class TransformersBackend:
         if compile:
             torch._dynamo.reset()
             self.model.generation_config.cache_implementation = 'static'
-            self.model.forward = torch.compile(self.model.forward, mode='reduce-overhead', fullgraph=True)
+            self.model.generation_config.compile_config = CompileConfig(fullgraph=True, mode="reduce-overhead")
         
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
         self.device = device
