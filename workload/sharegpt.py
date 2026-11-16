@@ -1,6 +1,5 @@
 from .base import WorkloadLoader, Workload, Turn, Request
 from datasets import load_dataset
-from preprocessing import to_conversation
 
 
 class ShareGPTLoader(WorkloadLoader):
@@ -29,7 +28,7 @@ class ShareGPTLoader(WorkloadLoader):
             request = Request(id=row_id, turns=turns)
             
             if min_tokens is not None:
-                conversation = to_conversation(request)
+                conversation = request.to_conversation()
                 tokens = tokenizer.apply_chat_template(
                     conversation,
                     add_generation_prompt=True,

@@ -13,10 +13,8 @@ class InferenceConfig(BaseModel):
     model_name: str
     backend: BackendType
     precision: Precision = 'fp32'
-    batch_size: int = 1
-    output_tokens: int = 1024
-    warmup_batches: int = 0
     device: Device
+    batch_size: int = 1
 
     model_config = ConfigDict(extra='forbid')
 
@@ -42,6 +40,10 @@ class Config(BaseModel):
     workload_config: WorkloadConfig
     quality_config: QualityConfig | None
 
+    output_tokens: int = 1024
+    warmup_batches: int = 0
+    
+    
     model_config = ConfigDict(extra='forbid')
 
 

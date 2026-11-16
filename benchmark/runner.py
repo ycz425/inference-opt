@@ -24,11 +24,11 @@ class BenchmarkRunner:
             raise ValueError
 
         # WARM UP
-        for _ in range(config.inference_config.warmup_batches):
+        for _ in range(config.warmup_batches):
             batch = Workload(requests=workload.requests[0:batch_size])
             inputs = preprocess(tokenizer=tokenizer, workload=batch, max_tokens=config.workload_config.num_tokens, padding_side='left')
             self.backend.generate(inputs, output_tokens=1)
-            self.backend.generate(inputs, output_tokens=config.inference_config.output_tokens)
+            self.backend.generate(inputs, output_tokens=config.output_tokens)
 
         self.backend.synchronize()
         self.memory_monitor.reset()
@@ -49,7 +49,7 @@ class BenchmarkRunner:
 
             self.backend.synchronize()
             generation_start = time.perf_counter()
-            outputs = self.backend.generate(inputs, output_tokens=config.inference_config.output_tokens)
+            outputs = self.backend.generate(inputs, output_tokens=config.output_tokens)
             self.backend.synchronize()
             generation_end = time.perf_counter()
 
@@ -58,7 +58,7 @@ class BenchmarkRunner:
             output_tokens = count_output_tokens(outputs, tokenizer.pad_token_id)
             generation_time = generation_end - generation_start
 
-            tpot = (generation_time - ttft) / (config.inference_config.output_tokens - 1)
+            tpot = (generation_time - ttft) / (config.output_tokens - 1)
 
             results.append(BatchResult(
                 batch_size=len(batch.requests),

@@ -4,16 +4,9 @@ from .inputs import Inputs
 from typing import Literal
 
 
-def to_conversation(request: Request) -> list[dict[str, str]]:
-    turns = []
-    for turn in request.turns:
-        turns.append({'role': turn.role, 'content': turn.content})
-    return turns
-
-
 def preprocess(tokenizer: PreTrainedTokenizerBase, workload: Workload, max_tokens: int | None = None, padding_side: Literal['left', 'right'] = 'left') -> Inputs:
     tokenizer.padding_side = padding_side
-    conversations = [to_conversation(request) for request in workload.requests]
+    conversations = [request.to_conversation() for request in workload.requests]
 
     if max_tokens is None:
         batch_encoding = tokenizer.apply_chat_template(

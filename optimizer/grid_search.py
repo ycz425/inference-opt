@@ -47,9 +47,9 @@ grid = Grid(
 )
 
 constraint = Constraint(
-    max_memory=6 * 1024**3,                # 6 GiB
-    max_average_batch_latency=10.0,         # 10 seconds
-    max_ce_degradation=1.0,                 # 1%
+    max_ce_degradation=1.0,          
+    max_memory=8 * 1024**3,         
+    max_mean_e2e_latency=10.0
 )
 
 config = load_config('/Users/ycz425/Desktop/projects/inference-opt/config.yaml')
