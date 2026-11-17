@@ -1,0 +1,25 @@
+inference_config:
+  model_name: Qwen/Qwen2.5-1.5B-Instruct
+  backend: transformers
+  precision: fp16
+  device: cuda
+  batch_size: 64
+workload_config:
+  dataset: sharegpt
+  num_requests: 64
+  num_tokens: 256
+  seed: 42
+quality_config:
+  reference:
+    model_name: Qwen/Qwen2.5-1.5B-Instruct
+    backend: transformers
+    precision: fp16
+    device: cuda
+    batch_size: 16
+  workload:
+    dataset: sharegpt
+    num_requests: 64
+    num_tokens: 512
+    seed: 123
+output_tokens: 128
+warmup_batches: 1
