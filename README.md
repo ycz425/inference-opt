@@ -2,7 +2,7 @@
 
 A benchmarking and configuration-search harness for LLM inference. It measures latency, throughput, memory and quality loss for a model under different inference settings (precision, batch size, compilation), and grid-searches those settings under constraints.
 
-The experiments below use Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct on a single NVIDIA H100 with Hugging Face Transformers.
+The experiments below use Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct on a single NVIDIA H100, with Hugging Face Transformers and vLLM as backends.
 
 ## Key findings
 
@@ -10,13 +10,14 @@ The experiments below use Qwen2.5-1.5B-Instruct and Qwen2.5-7B-Instruct on a sin
 2. **A static KV cache plus CUDA-graph compilation cuts 7B decode latency 2.1×** at batch 1 (15.5 → 7.4 ms/token, ~2.06 TB/s, about 62% of peak HBM bandwidth). The gain shrinks as batch size grows (1.9× at batch 4, 1.6× at batch 16). It is gone at batch 64, and compiled decoding is slower than eager at batch 128 (open question, see below).
 3. **bitsandbytes quantization saves memory but is slower than fp16** for a 1.5B model on H100. int8 cuts weight memory 41% at 0.61% CE degradation but is 5.2× slower per token. int4 (NF4) cuts memory 60% but is 1.5× slower and loses 5.1% CE.
 4. **Batching is close to free while decoding is overhead-bound.** 1.5B fp16 throughput scales ~61× from batch 1 to batch 64 (67 → 4,071 output tok/s) with no change in TPOT. The cost appears in time to first token (TTFT: 17 → 118 ms).
+5. **vLLM has the lowest single-request latency, but an anomalous large-batch slowdown in this setup.** At batch 1, vLLM (compiled + CUDA graphs) decodes 7B at 6.40 ms/token, 1.15× faster than compiled HF and 2.4× faster than eager HF (~2.38 TB/s, ~71% of peak HBM bandwidth). Even with compilation off, vLLM beats eager HF 1.6×. From batch 16 up, vLLM's decode step grows ~0.65 ms per sequence, and at batch 128 it delivers 1,258 tok/s against HF eager's 5,755. vLLM's own `vllm bench latency` reproduces the same numbers to within 0.1%, so the harness is not the cause (open question, see below).
 
 ## How it works
 
 ```
 config.yaml ──► workload (ShareGPT, fixed-length) ──► preprocessing (chat template, tokenize)
                                                           │
-                     backend (HF Transformers: precision / compile) ◄─┘
+              backend (HF Transformers | vLLM: precision / compile) ◄─┘
                                                           │
                 benchmark runner ──► TTFT, TPOT, throughput, memory ──► result.json
                 quality evaluator ──► CE degradation vs. a reference model
@@ -27,7 +28,7 @@ config.yaml ──► workload (ShareGPT, fixed-length) ──► preprocessing 
 |---|---|
 | `workload/` | Loads ShareGPT conversations. Keeps only prompts with at least `num_tokens` tokens after the chat template, so every request can be truncated to exactly the same length |
 | `preprocessing/` | Applies the chat template and tokenizes. Truncates to `num_tokens` (no padding in fixed-length mode) |
-| `backends/` | Backend registry. `TransformersBackend` supports fp32/fp16/bf16, bitsandbytes int8/int4, and `compile` |
+| `backends/` | Backend registry. `TransformersBackend` supports fp32/fp16/bf16, bitsandbytes int8/int4, and `compile`. `vLLMBackend` supports fp32/fp16/bf16 on CUDA, with `compile` mapped to vLLM's torch.compile + CUDA graphs (`enforce_eager=not compile`) |
 | `benchmark/` | Timed benchmark loop, metric aggregation, and cross-entropy quality evaluation |
 | `memory/` | Peak and current memory monitors for CUDA and MPS |
 | `experiment/` | Runs one config end to end and writes `config.yaml` and `result.json` to a timestamped folder |
@@ -77,7 +78,7 @@ All runs: single H100, 256 input tokens, 128 output tokens per request.
 | int4 | 1 | 45 | 33.5 | 21.87 | 1.24 | 1.32 | 5.09% |
 | int4 | 64 | 1,700 | 929.5 | 30.64 | 1.24 | 3.19 | 5.09% |
 
-The bf16 rows at batch 4 and 16 track fp16 within 1%. Full per-config results are in `experiments/qwen2.5-1.5b_grid_search/`.
+The bf16 rows at batch 4 and 16 track fp16 within 1%. Full per-config results are in `runs/qwen2.5-1.5b_grid_search/`.
 
 **Observations**
 - **TPOT is flat across batch size and precision (fp16/bf16).** That is the signature of a fixed per-step cost: Python and kernel-launch overhead. The weights would stream in ~0.9 ms at full bandwidth.
@@ -100,7 +101,7 @@ The bf16 rows at batch 4 and 16 track fp16 within 1%. Full per-config results ar
 | 64 | 15.58 | 15.24 | 1.02× | 3,434 | 3,499 | — | — |
 | 128 | 16.03 | 23.49 | 0.68× | **5,755** | 4,312 | — | — |
 
-Effective bandwidth is shown only at small batch, where weight reads dominate each step. TTFT is unchanged by compilation (17–20 ms at batch 1, ~406 ms at batch 64, ~812–816 ms at batch 128), because only decode is compiled. Prefill runs at ~40k tok/s. Full results are in `experiments/qwen2.5-7b_compile/`.
+Effective bandwidth is shown only at small batch, where weight reads dominate each step. TTFT is unchanged by compilation (17–20 ms at batch 1, ~406 ms at batch 64, ~812–816 ms at batch 128), because only decode is compiled. Prefill runs at ~40k tok/s. Full results are in `runs/qwen2.5-7b_compile/`.
 
 **Observations**
 - **Model size barely changes eager TPOT** (14.9 ms at 1.5B, 15.5 ms at 7B). Both models have 28 layers and launch about the same number of kernels per step. In eager mode, step time is the larger of CPU launch time and GPU work, and launch time wins.
@@ -108,9 +109,42 @@ Effective bandwidth is shown only at small batch, where weight reads dominate ea
 - **With overhead removed, real GPU work shows up.** Compiled TPOT rises with batch size (7.4 → 7.9 → 9.8 ms), while eager TPOT hides it behind the fixed launch cost.
 - **Compilation is a latency optimization here, not a throughput one.** The highest throughput is still eager at batch 128.
 
+### Experiment 3: vLLM vs HF Transformers (Qwen2.5-7B-Instruct, bf16)
+
+Same workload as Experiment 2 (128 requests, 2 warmup batches), vLLM 0.25.0 (V1 engine, FlashAttention 3). **Static batching:** each batch is one `LLM.generate()` call with `max_num_seqs = batch_size`. Since every request has the same input and output length, vLLM's continuous batching admits the whole batch together and all requests finish on the same step, which makes it equivalent to HF's static batching. Prefix caching is off (otherwise the second `generate` call on the same prompts would skip prefill and break the TTFT/TPOT method), and `max_num_batched_tokens ≥ batch_size × input length`, so prefill runs in one step without chunking. Output length is forced with `ignore_eos` and `min_tokens = max_tokens`. "Compiled" is vLLM's default (torch.compile + CUDA graphs). "Eager" sets `enforce_eager=True`.
+
+TPOT (ms):
+
+| Batch | HF eager | HF compiled | vLLM eager | vLLM compiled |
+|---|---|---|---|---|
+| 1 | 15.52 | 7.39 | 9.81 | **6.40** |
+| 4 | 15.41 | **7.93** | 9.84 | 8.38 |
+| 16 | 15.39 | **9.77** | 16.68 | 16.33 |
+| 64 | 15.58 | **15.24** | 47.88 | 48.28 |
+| 128 | **16.03** | 23.49 | 87.41 | 89.25 |
+
+Output tok/s and TTFT:
+
+| Batch | HF eager tok/s | HF compiled tok/s | vLLM eager tok/s | vLLM compiled tok/s | vLLM TTFT (ms) |
+|---|---|---|---|---|---|
+| 1 | 64 | 135 | 101 | **154** | 19.5 |
+| 4 | 257 | **490** | 390 | 454 | 64.0 |
+| 16 | 994 | **1,511** | 868 | 884 | 242 |
+| 64 | 3,434 | **3,499** | 1,166 | 1,158 | 943 |
+| 128 | **5,755** | 4,312 | 1,258 | 1,236 | 1,923 |
+
+Memory isn't reported for vLLM: the engine runs in a separate process, so the harness's `torch.cuda` memory monitor can't see its allocations. Full results are in `runs/qwen2.5-7b_vllm/`.
+
+**Observations**
+- **vLLM is the fastest backend at batch 1** (6.40 ms/token, ~2.38 TB/s effective bandwidth vs ~2.06 TB/s for compiled HF). Compiled HF overtakes it at batch 4.
+- **vLLM's eager mode is already much faster than HF's** (9.8 vs 15.5 ms at batch 1). Its own model implementation and fused kernels launch far fewer kernels per step, so even without CUDA graphs it is less launch-bound.
+- **vLLM's step time grows linearly with batch size:** about 6 ms + 0.65 ms per sequence, identical with and without compilation from batch 16 up. Real decode work for a 7B model at ~300 tokens of context should add well under 0.1 ms per sequence. Prefill is also slow, at ~17k tok/s vs HF's ~40k (TTFT ≈ 15 ms per request).
+- **The slowdown is reproduced outside the harness.** A standalone diagnostic (`diagnostics/vllm_diag.slurm`) ran vLLM's own `vllm bench latency` with the same shape: 2.320 s at batch 16 and 13.218 s at batch 128, matching the harness's 2.321 s and 13.222 s. Removing `min_tokens`, switching greedy vs random sampling, and enabling chunked prefill all made no difference. The GPU reported no throttling.
+
 ## Open questions and caveats
 
 - **Why compiled decoding is slower at batch 128.** Candidates: (a) CUDA graphs skipped or recompiled at large shapes (compiled batch-64 TPOT almost exactly matches eager, which is suspicious); (b) the static cache is preallocated to the maximum length and masked, so attention reads the full cache every step while the dynamic cache reads only the tokens so far, which costs more as batch grows; (c) Inductor-generated kernels underperforming cuBLAS/SDPA at large shapes. Compiled runtime memory is also higher (10.3 vs 6.6 GB at batch 128). Next step: check the run logs for `skipping cudagraphs` or recompiles.
+- **Why vLLM slows down at large batch.** A healthy H100 should finish the batch-128 shape in roughly 2 s, not 13 s. Because the extra cost scales with the number of requests rather than with compute, and is unaffected by CUDA graphs, it most likely comes from per-request CPU-side work in the engine in this vLLM 0.25 build or environment (candidates: the new V2 model runner, asynchronous scheduling). Ruled out: the harness, `min_tokens`, sampling mode, chunked prefill, tokenization/detokenization, and GPU throttling. Next step: rerun `vllm bench latency` at batch 128 with async scheduling off, the V1 model runner, and the torch profiler, and compare against an older vLLM release. Until then, treat vLLM results at batch ≥ 16 as specific to this environment.
 - **Few samples at large batch.** Batch 64 and 128 cover only 1–2 measured batches (128 requests ÷ batch size). Variation between batches is under ~2% elsewhere, but treat those cells as single measurements.
 - **One compiled batch-16 outlier** (TTFT 308 ms vs ~108 ms) suggests a recompile during measurement. The medians are unaffected.
 - **Single runs.** Each config was run once. On the H100, variation within a run was ~1%, so the large effects above are well beyond noise. Small differences (such as bf16 vs fp16 speed) are not.
@@ -146,11 +180,11 @@ python -m optimizer.grid_search
 ```yaml
 inference_config:
   model_name: Qwen/Qwen2.5-7B-Instruct
-  backend: transformers
+  backend: transformers    # transformers | vllm (vllm: CUDA only, no int8/int4)
   precision: bf16          # fp32 | fp16 | bf16 | int8 | int4
   device: cuda             # cuda | mps
   batch_size: 16
-  compile: true            # static KV cache + CUDA-graph decode
+  compile: true            # HF: static KV cache + CUDA-graph decode; vLLM: torch.compile + CUDA graphs
 
 workload_config:
   dataset: sharegpt

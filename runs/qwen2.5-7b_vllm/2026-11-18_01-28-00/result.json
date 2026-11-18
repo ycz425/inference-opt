@@ -1,0 +1,469 @@
+{
+    "num_requests": 128,
+    "total_input_tokens": 32768,
+    "total_output_tokens": 16384,
+    "total_generation_time": 36.08569684997201,
+    "output_tokens_per_sec": 454.0303064706566,
+    "prefill_tokens_per_sec": 16000.225573705973,
+    "decode_tokens_per_sec": 477.587725228534,
+    "requests_per_sec": 3.547111769302005,
+    "mean_ttft": 0.0639990977178968,
+    "median_ttft": 0.06399639300070703,
+    "mean_tpot": 0.008375424636564792,
+    "median_tpot": 0.008375360350872529,
+    "mean_e2e_latency": 1.1276780265616253,
+    "model_memory": null,
+    "peak_memory": null,
+    "runtime_memory": null,
+    "ce_degradation": null,
+    "batch_results": [
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127617891994305,
+            "ttft": 0.06419362802989781,
+            "tpot": 0.008373419401294544,
+            "ids": [
+                "ghodEuM",
+                "MVaBNnj",
+                "pOI4cV9",
+                "NRgakdK"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1276610830100253,
+            "ttft": 0.06400037801358849,
+            "tpot": 0.008375281141704227,
+            "ids": [
+                "0B9vjrr",
+                "G7GKoO0",
+                "j3PaGBt",
+                "hm4fC9Z"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1276548929745331,
+            "ttft": 0.06435170699842274,
+            "tpot": 0.008372466031307957,
+            "ids": [
+                "4kS2Om3",
+                "l6geHv4",
+                "B186Yqq",
+                "TLjsOTw"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277910929638892,
+            "ttft": 0.06399240798782557,
+            "tpot": 0.008376367598236721,
+            "ids": [
+                "pc4hnL3",
+                "quOA6hV",
+                "w9IftrQ",
+                "nfX6bjU"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1278590629808605,
+            "ttft": 0.0637770879548043,
+            "tpot": 0.008378598228551623,
+            "ids": [
+                "e328KPR",
+                "F3BFCeJ",
+                "7iV18M9",
+                "fynDwmI"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275842629838735,
+            "ttft": 0.0638518079649657,
+            "tpot": 0.008375846102511086,
+            "ids": [
+                "UvTm1i5",
+                "pgWcrXC",
+                "2BSHRQc",
+                "1nLLGhw"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275524139637128,
+            "ttft": 0.06391588796395808,
+            "tpot": 0.00837509075590358,
+            "ids": [
+                "rwTJYPu",
+                "47GYapC",
+                "3d6WaOt",
+                "Yaznw7k"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275820030132309,
+            "ttft": 0.0641553970053792,
+            "tpot": 0.008373437842581509,
+            "ids": [
+                "6ndgm6I",
+                "LrntAh7",
+                "o0iI3YM",
+                "K6HY8Q4"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127521593007259,
+            "ttft": 0.06425560801289976,
+            "tpot": 0.008372173110191805,
+            "ids": [
+                "1wzfkIn",
+                "zUjtU9m",
+                "vqOPXOQ",
+                "d3SBjmr"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277427630266175,
+            "ttft": 0.06312560907099396,
+            "tpot": 0.008382812235871052,
+            "ids": [
+                "iSzBuyv",
+                "8VnKOP8",
+                "JTEz2fP",
+                "9MQpJ0G"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1279197219992056,
+            "ttft": 0.06416015804279596,
+            "tpot": 0.008376059558711887,
+            "ids": [
+                "sfHNpRz",
+                "2C0la52",
+                "K4T9MJT",
+                "t4Kzklg"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127471622894518,
+            "ttft": 0.06395548896398395,
+            "tpot": 0.0083741427868546,
+            "ids": [
+                "f6UIQZR",
+                "DDS3WFa",
+                "FFXK0Ls",
+                "AcG4vXN"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1278875529533252,
+            "ttft": 0.06408249796368182,
+            "tpot": 0.008376417755823963,
+            "ids": [
+                "Mqbbt2f",
+                "k9EEglb",
+                "zvmX9pX",
+                "tMTXkSK"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277771920431405,
+            "ttft": 0.06409636791795492,
+            "tpot": 0.008375439560040832,
+            "ids": [
+                "Jcljhyz",
+                "eLS8PMk",
+                "qvzasKF",
+                "GPNLudw"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127856292994693,
+            "ttft": 0.0642097779782489,
+            "tpot": 0.0083751694095783,
+            "ids": [
+                "any6LrS",
+                "jgN6Ico",
+                "tGKVANx",
+                "yUSbrJj"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1278942920034751,
+            "ttft": 0.06395429803524166,
+            "tpot": 0.008377480267466405,
+            "ids": [
+                "KGONWn9",
+                "hu0CYYC",
+                "Wlls558",
+                "DjQPxtC"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1278317519463599,
+            "ttft": 0.06410452804993838,
+            "tpot": 0.008375804912570247,
+            "ids": [
+                "5cN6b2O",
+                "iDqyJcr",
+                "626sUhK",
+                "vClQxDr"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1276625629980117,
+            "ttft": 0.06327115895692259,
+            "tpot": 0.00838103467748889,
+            "ids": [
+                "RPK3qQh",
+                "58j5elj",
+                "Hgb5yty",
+                "5y3E0Mq"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277718319324777,
+            "ttft": 0.06452708796132356,
+            "tpot": 0.008372005858040583,
+            "ids": [
+                "7xZ8kmB",
+                "5GfONHD",
+                "cS34B2y",
+                "LaV8Zxk"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275110030546784,
+            "ttft": 0.06329135899432003,
+            "tpot": 0.008379682236695735,
+            "ids": [
+                "7WN47RV",
+                "v2Ygaid",
+                "vqMzM2S",
+                "aVePY1I"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277157630538568,
+            "ttft": 0.06391907809302211,
+            "tpot": 0.008376351850085312,
+            "ids": [
+                "BOim2I9",
+                "qj9UMFN",
+                "Z5UyrUD",
+                "Ux7zV0S"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1274008430773392,
+            "ttft": 0.06398782797623426,
+            "tpot": 0.008373330827567756,
+            "ids": [
+                "xfgMTME",
+                "Tc44Wy2",
+                "EtRvFJh",
+                "XXtYyDZ"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1276649829233065,
+            "ttft": 0.06408942793495953,
+            "tpot": 0.008374610669199582,
+            "ids": [
+                "3bd6dNO",
+                "C3OeIkM",
+                "ud25Dsj",
+                "AVwMb5w"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275419329758734,
+            "ttft": 0.06405643804464489,
+            "tpot": 0.008373901534891563,
+            "ids": [
+                "XC6GEt6",
+                "wg0bsWJ",
+                "3iEb2dG",
+                "zwargxk"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1276475130580366,
+            "ttft": 0.06441987806465477,
+            "tpot": 0.008371871141680172,
+            "ids": [
+                "93JIhkC",
+                "jGTl8uD",
+                "TNoJZ4d",
+                "CW0Cxlh"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277379429666325,
+            "ttft": 0.06393409799784422,
+            "tpot": 0.008376408228100695,
+            "ids": [
+                "X3CDnxg",
+                "7DiOBX2",
+                "pv8CsRO",
+                "ei9YY3m"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1277640430489555,
+            "ttft": 0.0645853370660916,
+            "tpot": 0.008371485873880818,
+            "ids": [
+                "B0pXNzI",
+                "9xwTpCq",
+                "ArkFcnY",
+                "mSmHPTd"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275933530414477,
+            "ttft": 0.06396855798084289,
+            "tpot": 0.008374998386303975,
+            "ids": [
+                "DsgrT5i",
+                "3ERjUIw",
+                "WfPrQcG",
+                "e3zZIWS"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127748582046479,
+            "ttft": 0.06392778793815523,
+            "tpot": 0.008376541685892313,
+            "ids": [
+                "2Vh9CpK",
+                "CnakGhr",
+                "3hib8TO",
+                "7gBslrQ"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.127375902957283,
+            "ttft": 0.0640097779687494,
+            "tpot": 0.00837296161408294,
+            "ids": [
+                "fKftnSk",
+                "iTlRAG8",
+                "a6pZtrg",
+                "j0MkERz"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1275440530152991,
+            "ttft": 0.06380965805146843,
+            "tpot": 0.008375861377667958,
+            "ids": [
+                "Uo49QDY",
+                "1gNK22E",
+                "7VQURYv",
+                "CKK6Uzt"
+            ]
+        },
+        {
+            "batch_size": 4,
+            "input_tokens": 1024,
+            "output_tokens": 512,
+            "generation_time": 1.1278110530693084,
+            "ttft": 0.06399101798888296,
+            "tpot": 0.008376535709294688,
+            "ids": [
+                "5rzwOqo",
+                "CpzXpgp",
+                "2nvoInR",
+                "R9CEHAD"
+            ]
+        }
+    ]
+}

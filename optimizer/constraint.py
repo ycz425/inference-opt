@@ -1,5 +1,7 @@
 from benchmark import BenchmarkResult
 from pydantic import BaseModel, ConfigDict
+from pathlib import Path
+import yaml
 
 
 class Constraint(BaseModel):
@@ -21,3 +23,8 @@ def constraint_satisfied(result: BenchmarkResult, constraint: Constraint | None)
             (constraint.max_ce_degradation is None or result.ce_degradation <= constraint.max_ce_degradation)
         )
     )
+
+def load_constraint(path: Path | str):
+    with open(path, 'r') as f:
+        raw = yaml.safe_load(f)
+    return Constraint.model_validate(raw)   
