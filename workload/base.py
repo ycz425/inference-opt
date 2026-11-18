@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 from typing import Literal
 
-type Role = Literal['user', 'assistant']
+Role = Literal['user', 'assistant']
 
 class Turn(BaseModel):
     role: Role

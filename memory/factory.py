@@ -8,5 +8,8 @@ MEMORY_MONITORS: dict[tuple[BackendType, Device], MemoryMonitor] = {
     ('transformers', 'mps'): TorchMPSMemoryMonitor()
 }
 
-def memory_monitor_from_config(config: Config):
-    return MEMORY_MONITORS[(config.inference_config.backend, config.inference_config.device)]
+def memory_monitor_from_config(config: Config) -> MemoryMonitor | None:
+    if (config.inference_config.backend, config.inference_config.device) in MEMORY_MONITORS:
+        return MEMORY_MONITORS[(config.inference_config.backend, config.inference_config.device)]
+    else:
+        return None

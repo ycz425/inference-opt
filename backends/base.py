@@ -4,13 +4,10 @@ from config import Precision, Device
 import torch
 
 class Backend(Protocol):
-    def __init__(self, model_name: str, precision: Precision, device: Device, compile: bool = False):
+    def __init__(self, model_name: str, precision: Precision, device: Device, compile: bool = False, batch_size: int = 8):
         ...
 
-    def generate(self, inputs: Inputs, output_tokens: int) -> torch.LongTensor:
-        ...
-
-    def detokenize(self, outputs: torch.LongTensor) -> list[str]:
+    def generate(self, inputs: Inputs, output_tokens: int) -> Any:
         ...
 
     def synchronize(self) -> None:

@@ -27,7 +27,10 @@ class ExperimentRunner:
         backend = backend_from_config(config.inference_config)
         memory_monitor = memory_monitor_from_config(config)
 
-        model_memory = memory_monitor.get_current_memory()
+        if memory_monitor:
+            model_memory = memory_monitor.get_current_memory()
+        else:
+            model_memory = None
     
         runner = BenchmarkRunner(backend=backend, memory_monitor=memory_monitor)
     

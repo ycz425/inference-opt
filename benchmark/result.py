@@ -9,7 +9,6 @@ class BatchResult(BaseModel):
     ttft: float
     tpot: float
     ids: list[str]
-    output_texts: list[str]
 
 
 class BenchmarkResult(BaseModel):
@@ -31,16 +30,16 @@ class BenchmarkResult(BaseModel):
 
     mean_e2e_latency: float
 
-    model_memory: int
-    peak_memory: int
-    runtime_memory: int
+    model_memory: int | None
+    peak_memory: int | None
+    runtime_memory: int | None
 
     ce_degradation: float | None
 
     batch_results: list[BatchResult]
 
 
-def benchmark_result(batch_results: list[BatchResult], peak_memory: int, model_memory: int, ce_degradation: float) -> BenchmarkResult:
+def benchmark_result(batch_results: list[BatchResult], peak_memory: int | None, model_memory: int | None, ce_degradation: float | None) -> BenchmarkResult:
     num_requests = 0
     total_input_tokens = 0
     total_output_tokens = 0
@@ -73,7 +72,10 @@ def benchmark_result(batch_results: list[BatchResult], peak_memory: int, model_m
     
     mean_e2e_latency = total_generation_time / len(batch_results)
 
-    runtime_memory = peak_memory - model_memory
+    if peak_memory is None or model_memory is None:
+        runtime_memory = None
+    else:
+        runtime_memory = peak_memory - model_memory
 
     return BenchmarkResult(
         num_requests=num_requests,

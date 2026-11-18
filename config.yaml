@@ -1,19 +1,19 @@
 inference_config:
   model_name: Qwen/Qwen2.5-7B-Instruct
-  backend: transformers
+  backend: vllm
   precision: bf16
   device: cuda
-  batch_size: 1
-  compile: false
+  batch_size: 1          # overridden by grid
+  compile: false         # overridden by grid
 
 workload_config:
   dataset: sharegpt
-  num_requests: 128
+  num_requests: 128      # divisible by every batch size
   num_tokens: 256
   seed: 42
 
 output_tokens: 128
-warmup_batches: 2
+warmup_batches: 2        # compiling happens here
 
 quality_config: null
   # reference:

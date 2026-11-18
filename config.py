@@ -4,10 +4,10 @@ from pathlib import Path
 import yaml
 
 
-type BackendType = Literal['transformers']
-type Precision = Literal['fp32', 'fp16', 'bf16', 'int8', 'int4']
-type Device = Literal['cuda', 'mps']
-type Dataset = Literal['synthetic', 'sharegpt']
+BackendType = Literal['transformers', 'vllm']
+Precision = Literal['fp32', 'fp16', 'bf16', 'int8', 'int4']
+Device = Literal['cuda', 'mps']
+Dataset = Literal['synthetic', 'sharegpt']
 
 class InferenceConfig(BaseModel):
     model_name: str
@@ -16,7 +16,7 @@ class InferenceConfig(BaseModel):
     device: Device
     compile: bool = False
     batch_size: int = 1
-
+    continuous_batching: bool = False
     model_config = ConfigDict(extra='forbid')
 
 

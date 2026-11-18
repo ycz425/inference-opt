@@ -17,7 +17,7 @@ DTYPE_MAP: dict[Precision, torch.dtype] = {
 
 
 class TransformersBackend:
-    def __init__(self, model_name: str, precision: Precision = 'fp32', device: Device ='cuda', compile: bool = False):
+    def __init__(self, model_name: str, precision: Precision = 'fp32', device: Device ='cuda', compile: bool = False, batch_size: int = 8):
         if precision in {'int4', 'int8'}:
             if device != 'cuda':
                 raise ValueError
@@ -31,7 +31,6 @@ class TransformersBackend:
             self.model.generation_config.cache_implementation = 'static'
             self.model.generation_config.compile_config = CompileConfig(fullgraph=True, mode="reduce-overhead")
         
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
         self.device = device
 
     def generate(self, inputs: Inputs, output_tokens: int = 256) -> torch.LongTensor:
@@ -45,9 +44,6 @@ class TransformersBackend:
             max_new_tokens=output_tokens
         )
         return outputs[:, input_ids.shape[1]:]
-
-    def detokenize(self, outputs: torch.LongTensor) -> list[str]:
-        return self.tokenizer.batch_decode(outputs.cpu(), skip_special_tokens=True)
 
     def synchronize(self) -> None:
         if self.device == 'cuda':

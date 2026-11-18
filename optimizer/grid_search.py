@@ -40,21 +40,21 @@ class GridSearch(Optimizer):
         return best_config
 
             
+if __name__ == "__main__":
+    grid = Grid(
+        precision=['bf16'],
+        compile=[False, True],
+        batch_size=[1, 4, 16, 64, 128],
+    )
 
-grid = Grid(
-    precision=['bf16'],
-    compile=[False, True],
-    batch_size=[1, 4, 16, 64, 128],
-)
+    # constraint = Constraint(
+    #     max_ce_degradation=1.0,          
+    #     max_memory=8 * 1024**3,         
+    #     max_mean_e2e_latency=10.0
+    # )
 
-# constraint = Constraint(
-#     max_ce_degradation=1.0,          
-#     max_memory=8 * 1024**3,         
-#     max_mean_e2e_latency=10.0
-# )
+    constraint = None
 
-constraint = None
-
-config = load_config('config.yaml')
-opt = GridSearch(config, 'test_optimization', verbose=True)
-print(opt.search(grid, metric='output_tokens_per_sec', constraint=constraint))
+    config = load_config('config.yaml')
+    opt = GridSearch(config, 'qwen2.5-7b_vllm', verbose=True)
+    print(opt.search(grid, metric='output_tokens_per_sec', constraint=constraint))
